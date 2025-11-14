@@ -1,0 +1,6 @@
+require('colorscheme')
+require('plugins')
+require('options')
+require('mappings')
+require('autocmds')
+require('lsp')
