@@ -209,4 +209,13 @@ wezterm.on("update-status", function(window, pane)
   }))
 end)
 
+-- Tab Title
+wezterm.on(
+  "format-tab-title",
+  function(tab, tabs, panes, config, hover, max_width)
+    local idx = tab.tab_index + 1
+    return {{ Text = " " .. idx .. " " }}
+  end
+)
+
 return config
