@@ -159,7 +159,10 @@ wezterm.on("update-status", function(window, pane)
     local cwd_path = tostring(cwd)
 
     -- Remove file:// prefix
-    cwd_path = cwd_path:gsub("^file://", "")
+    cwd_path = cwd_path:gsub("^file://[^/]*", "")
+
+    -- Remove trailing slash
+    cwd_path = cwd_path:gsub("/$", "")
 
     -- On Windows, remove leading slash (file:///C:/... becomes C:/)
     if host_os == "windows" then
