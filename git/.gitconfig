@@ -1,0 +1,9 @@
+[core]
+  editor = nvim
+[user]
+	email = lmquan.1860@gmail.com
+	name = minhquan186
+[alias]
+  st = status
+  cm = commit
+  co = checkout
