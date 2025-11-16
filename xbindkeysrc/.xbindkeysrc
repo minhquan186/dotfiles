@@ -1,0 +1,17 @@
+# Volume controls
+"~/.config/bspwm/scripts/volume.sh up"
+    XF86AudioRaiseVolume
+
+"~/.config/bspwm/scripts/volume.sh down"
+    XF86AudioLowerVolume
+
+"~/.config/bspwm/scripts/volume.sh mute"
+    XF86AudioMute
+
+# Brightness controls
+"brightnessctl set +5%"
+    XF86MonBrightnessUp
+
+"brightnessctl set 5%-"
+    XF86MonBrightnessDown
+EOF

@@ -105,13 +105,13 @@ super + {Left,Down,Up,Right}
 
 # Volume control
 XF86AudioRaiseVolume
-    pactl set-sink-volume @DEFAULT_SINK@ +5%
+    ~/.config/bspwm/scripts/volume.sh up
 
 XF86AudioLowerVolume
-    pactl set-sink-volume @DEFAULT_SINK@ -5%
+    ~/.config/bspwm/scripts/volume.sh down
 
 XF86AudioMute
-    pactl set-sink-mute @DEFAULT_SINK@ toggle
+    ~/.config/bspwm/scripts/volume.sh mute
 
 # Brightness
 XF86MonBrightnessUp
