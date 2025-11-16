@@ -1,0 +1,56 @@
+#!/bin/sh
+
+# Kill existing processes to avoid duplicates
+pkill -x sxhkd
+pkill -x picom
+
+# Start hotkey daemon
+sxhkd &
+
+# Start xbindkeys for media keys
+xbindkeys &
+
+# Kill existing polybar
+pkill -x polybar
+
+# Start polybar
+polybar main &
+
+# Start compositor (optional - comment out if you don't want transparency)
+picom &
+
+# Set wallpaper (if you have backgrounds)
+feh --bg-scale ~/.config/backgrounds/022.jpg &
+
+# Monitor configuration - set workspaces
+bspc monitor -d 1 2 3 4 5 6 7 8 9
+
+# Window appearance
+bspc config border_width         2
+bspc config window_gap          10
+bspc config split_ratio          0.50
+
+# Monocle mode settings
+bspc config borderless_monocle   true
+bspc config gapless_monocle      true
+
+# Focus behavior
+bspc config focus_follows_pointer true
+
+# Dynamic tiling - automatically split based on longest side
+bspc config automatic_scheme longest_side
+
+# Colors (Catppuccin Mocha inspired)
+bspc config normal_border_color  "#313244"
+bspc config active_border_color  "#89b4fa"
+bspc config focused_border_color "#89dceb"
+
+# Window rules
+bspc rule -a WezTerm desktop='^1' follow=on
+bspc rule -a firefox desktop='^2' follow=on
+bspc rule -a firefox-esr desktop='^2' follow=on
+bspc rule -a Spotify desktop='^3' follow=on
+
+# Floating windows
+bspc rule -a Pavucontrol state=floating
+bspc rule -a Blueman-manager state=floating
