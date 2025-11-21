@@ -6,6 +6,10 @@
 super + Return
     wezterm
 
+# browser
+super + b
+  firefox-esr
+
 # program launcher
 super + d
     rofi -show drun
