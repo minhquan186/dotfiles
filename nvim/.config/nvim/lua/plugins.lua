@@ -16,6 +16,7 @@ vim.pack.add({
   { src = "https://github.com/saghen/blink.cmp", version = vim.version.range("^1") }, -- Completion
   { src = "https://github.com/nvim-lualine/lualine.nvim" }, -- Lualine
   { src = "https://github.com/goolord/alpha-nvim" }, -- Dashboard
+  { src = "https://github.com/brenoprata10/nvim-highlight-colors" },
 })
 
 ---------------------
@@ -28,6 +29,7 @@ require("mini.pairs").setup({})
 require("mini.indentscope").setup({})
 require("mini.files").setup({})
 require("mason").setup({})
+require('nvim-highlight-colors').setup({})
 
 -- Gitsigns
 require("gitsigns").setup({

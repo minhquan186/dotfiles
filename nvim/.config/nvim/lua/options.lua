@@ -5,7 +5,7 @@ local o = vim.opt
 -----------
 o.clipboard = 'unnamedplus'   -- use system clipboard
 o.mouse = 'a'                 -- allow the mouse to be used in Nvim
-o.swapfile = false            -- disable swap files creation
+o.swapfile = false            -- disable swap files creationop
 o.completeopt = {'menu', 'menuone', 'noselect'}
 
 ---------

@@ -28,7 +28,6 @@ config.initial_cols = 120
 config.initial_rows = 28
 
 -- Misc
-config.default_workspace = "Hello"
 config.hide_mouse_cursor_when_typing = true
 config.scrollback_lines = 3000
 
