@@ -1,5 +1,6 @@
 [core]
   editor = nvim
+  pager = delta
 [user]
 	email = lmquan.1860@gmail.com
 	name = minhquan186
@@ -9,3 +10,15 @@
   co = checkout
   br = branch
   hist = "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --"
+[delta]
+    navigate = true  # use n and N to move between diff sections
+    dark = true      # or light = true, or omit for auto-detection
+    side-by-side = true
+  line-numbers = true
+[merge]
+    conflictStyle = zdiff3
+	tool = nvimdiff
+[fetch]
+	prune = true
+[diff]
+	tool = nvimdiff
