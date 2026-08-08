@@ -18,6 +18,59 @@ local function getOS()
 end
 local host_os = getOS()
 
+-- Battery status (nil means AC power or no battery)
+local function get_battery_status()
+  local batteries = wezterm.battery_info()
+  if batteries == nil or #batteries == 0 then
+    return nil
+  end
+
+  local total_charge = 0
+  local battery_count = 0
+  for _, b in ipairs(batteries) do
+    if b.state == 'Charging' or b.state == 'Full' then
+      return nil
+    end
+    if type(b.state_of_charge) == "number" then
+      total_charge = total_charge + b.state_of_charge
+      battery_count = battery_count + 1
+    end
+  end
+
+  if battery_count == 0 then
+    return "🔋"
+  end
+
+  local percentage = math.floor((total_charge / battery_count) * 100 + 0.5)
+  return string.format("🔋 %d%%", percentage)
+end
+
+-- Cache weather data between status updates.
+local weather_cache = {
+  data = "",
+  last_update = 0,
+  interval = 3600, -- Update every hour
+}
+
+local function get_weather()
+  local now = os.time()
+
+  if now - weather_cache.last_update < weather_cache.interval then
+    return weather_cache.data
+  end
+
+  local success, stdout = wezterm.run_child_process({
+    "curl", "-s", "wttr.in/Hanoi?format=%c%t"
+  })
+
+  if success then
+    weather_cache.data = stdout:gsub("%s+", " "):gsub("^%s+", ""):gsub("%s+$", "")
+    weather_cache.last_update = now
+  end
+
+  return weather_cache.data
+end
+
 -- Change shell
 if host_os == "windows" then
   config.default_prog = { "pwsh.exe" }
@@ -105,36 +158,9 @@ wezterm.on("update-status", function(window, pane)
   -- Time
   local time = wezterm.strftime("%H:%M")
 
-  -- Weather
-  -- Cache for weather data
-  local weather_cache = {
-    data = "",
-    last_update = 0,
-    interval = 3600  -- Update every hour
-  }
-
-  local function get_weather()
-    local now = os.time()
-
-    -- Check if cache is still valid
-    if now - weather_cache.last_update < weather_cache.interval then
-      return weather_cache.data
-    end
-
-    -- Fetch new weather data
-    local success, stdout = wezterm.run_child_process({
-      "curl", "-s", "wttr.in/Hanoi?format=%c%t"
-    })
-
-    if success then
-      weather_cache.data = stdout:gsub("%s+", " "):gsub("^%s+", ""):gsub("%s+$", "")
-      weather_cache.last_update = now
-      return weather_cache.data
-    end
-
-    return weather_cache.data  -- Return cached data if fetch fails
-  end
-  local weather = get_weather()
+  -- Show battery in the weather slot while running on battery power.
+  local battery_status = get_battery_status()
+  local weather_or_battery = battery_status or get_weather()
 
   -- Display key table
   if window:active_key_table() then
@@ -203,7 +229,7 @@ wezterm.on("update-status", function(window, pane)
     { Text = wezterm.nerdfonts.cod_folder_opened .. " " .. cwd},
     { Text = " | " },
     { Foreground = { Color = "Yellow" } },
-    { Text = weather },
+    { Text = weather_or_battery },
     { Text = " | " },
     { Foreground = { Color = "Silver" } },
     { Text = wezterm.nerdfonts.md_clock_outline .. "  " .. time},
