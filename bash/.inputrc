@@ -1,0 +1,44 @@
+# Readline config for bash (and other readline programs)
+$include /etc/inputrc
+
+# ---------------------------------------------------------------------------
+# Completion
+# ---------------------------------------------------------------------------
+set completion-ignore-case on        # cd doc<Tab> -> Documents
+set show-all-if-ambiguous on         # list matches on the first Tab, not the second
+set colored-stats on                 # color matches like ls does
+set colored-completion-prefix on     # highlight the part already typed
+set mark-symlinked-directories on    # append / to symlinked directories
+
+# ---------------------------------------------------------------------------
+# Vi mode (disabled) - uncomment the 4 lines below to try it.
+# The cursor shows the mode: thin bar = insert, block = normal.
+# Emacs shortcuts kept in insert mode are set in the vi-insert keymap below.
+# ---------------------------------------------------------------------------
+# set editing-mode vi
+# set show-mode-in-prompt on
+# set vi-ins-mode-string "\1\e[6 q\2"
+# set vi-cmd-mode-string "\1\e[2 q\2"
+
+# ---------------------------------------------------------------------------
+# Key bindings
+# ---------------------------------------------------------------------------
+# Up/Down search history by what's already typed (type "git" then Up)
+set keymap emacs
+"\e[A": history-search-backward
+"\e[B": history-search-forward
+"\eOA": history-search-backward
+"\eOB": history-search-forward
+
+# Only used when vi mode is enabled
+set keymap vi-insert
+"\e[A": history-search-backward
+"\e[B": history-search-forward
+"\eOA": history-search-backward
+"\eOB": history-search-forward
+"\C-a": beginning-of-line
+"\C-e": end-of-line
+"\C-k": kill-line
+"\C-l": clear-screen
+
+set keymap emacs
