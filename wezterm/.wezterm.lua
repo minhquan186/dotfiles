@@ -129,7 +129,7 @@ config.color_scheme = "Catppuccin Mocha"
 -- Window Config
 config.window_decorations = "RESIZE"
 config.window_close_confirmation = "NeverPrompt"
-config.window_background_opacity = 0.85
+config.window_background_opacity = 0.75
 
 -- Dim inactive panes
 config.inactive_pane_hsb = {
