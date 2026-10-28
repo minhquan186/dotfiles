@@ -15,10 +15,10 @@ set mark-symlinked-directories on    # append / to symlinked directories
 # The cursor shows the mode: thin bar = insert, block = normal.
 # Emacs shortcuts kept in insert mode are set in the vi-insert keymap below.
 # ---------------------------------------------------------------------------
-# set editing-mode vi
-# set show-mode-in-prompt on
-# set vi-ins-mode-string "\1\e[6 q\2"
-# set vi-cmd-mode-string "\1\e[2 q\2"
+set editing-mode vi
+set show-mode-in-prompt on
+set vi-ins-mode-string "\1\e[6 q\2"
+set vi-cmd-mode-string "\1\e[2 q\2"
 
 # ---------------------------------------------------------------------------
 # Key bindings
