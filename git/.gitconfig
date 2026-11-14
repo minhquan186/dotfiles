@@ -19,6 +19,8 @@
     dark = true      # or light = true, or omit for auto-detection
     side-by-side = true
   line-numbers = true
+[interactive]
+  diffFilter = delta --color-only   # delta colors in git add -p
 [merge]
     conflictStyle = zdiff3
 	tool = nvimdiff
@@ -26,3 +28,7 @@
 	prune = true
 [diff]
 	tool = nvimdiff
+[include]
+  # Machine-local, untracked overrides (e.g. a work identity via
+  # [includeIf "gitdir:~/work/"]). Ignored if the file does not exist.
+  path = ~/.gitconfig.local

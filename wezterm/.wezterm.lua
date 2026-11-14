@@ -219,11 +219,9 @@ config.status_update_interval = 1000
 config.tab_bar_at_bottom = true
 config.switch_to_last_active_tab_when_closing_tab = true
 wezterm.on("update-status", function(window, pane)
-  -- Placeholder var
-
   -- Opaque window while Neovim is in the active pane, glass otherwise
   local overrides = window:get_config_overrides() or {}
-  local want = is_nvim(pane) and 1.0 or nil   -- nil = fall back to config's 0.75
+  local want = is_nvim(pane) and 1.0 or nil   -- nil = fall back to config.window_background_opacity
   if overrides.window_background_opacity ~= want then
     overrides.window_background_opacity = want
     window:set_config_overrides(overrides)
