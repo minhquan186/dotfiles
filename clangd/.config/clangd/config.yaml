@@ -1,0 +1,47 @@
+# Global clangd config (~/.config/clangd/config.yaml), applied to every project.
+# A project's own .clangd file is merged on top of this.
+#
+# CUDA: compile_commands.json from CMake contains nvcc command lines, which clang
+# cannot parse. For .cu/.cuh files, strip the nvcc-only flags and parse as CUDA.
+If:
+  PathMatch: .*\.cuh?
+CompileFlags:
+  Remove:
+    - -x                                # nvcc's "-x cu" (clang drops the argument too)
+    - -forward-unknown-to-host-compiler
+    - --generate-code*
+    - -gencode*
+    - arch=compute_*                    # argument of a separate "-gencode arch=..."
+    - -arch*
+    - --gpu-architecture*
+    - -rdc*
+    - --relocatable-device-code*
+    - -Xcompiler*
+    - --compiler-options*
+    - -Xptxas*
+    - -Xnvlink*
+    - -ccbin*
+    - --compiler-bindir*
+    - --expt-relaxed-constexpr
+    - --expt-extended-lambda
+    - --extended-lambda
+    - -use_fast_math
+    - --use_fast_math
+    - --diag-suppress*
+    - --diag_suppress*
+    - -diag-suppress*
+    - --default-stream*
+    - -lineinfo
+    - --source-in-ptx
+    - -G                                # nvcc device debug; clang would read it as -G <size>
+  Add:
+    - -xcuda
+    - --no-cuda-version-check           # toolkit may be newer than this clang knows
+    - -Wno-unknown-cuda-version
+    # Uncomment if clangd cannot find the toolkit or you use newer-arch intrinsics:
+    # - --cuda-path=/usr/local/cuda
+    # - --cuda-gpu-arch=sm_86
+#
+# If compile_commands.json has "--options-file <file>.rsp" for includes, configure
+# the project with -DCMAKE_CUDA_USE_RESPONSE_FILE_FOR_INCLUDES=OFF so clangd sees
+# the -I flags directly.
