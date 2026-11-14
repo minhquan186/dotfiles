@@ -11,7 +11,7 @@ set colored-completion-prefix on     # highlight the part already typed
 set mark-symlinked-directories on    # append / to symlinked directories
 
 # ---------------------------------------------------------------------------
-# Vi mode (disabled) - uncomment the 4 lines below to try it.
+# Vi mode (enabled) - comment out the 4 lines below to go back to emacs mode.
 # The cursor shows the mode: thin bar = insert, block = normal.
 # Emacs shortcuts kept in insert mode are set in the vi-insert keymap below.
 # ---------------------------------------------------------------------------
