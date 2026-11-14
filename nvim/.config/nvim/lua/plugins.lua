@@ -68,7 +68,9 @@ telescope.setup({
   },
   pickers = {
     find_files = {
-      hidden = true
+      hidden = true,
+      -- hidden = true also lists files inside .git/; hide those
+      file_ignore_patterns = { "^%.git/" },
     }
   }
 })

@@ -64,7 +64,7 @@ end
 ---@type vim.lsp.Config
 return {
   cmd = { 'clangd' },
-  filetypes = { 'c', 'cpp', 'objc', 'objcpp', 'cuda', 'cu' },
+  filetypes = { 'c', 'cpp', 'objc', 'objcpp', 'cuda' },  -- Neovim's filetype for .cu/.cuh is 'cuda'
   root_markers = {
     '.clangd',
     '.clang-tidy',

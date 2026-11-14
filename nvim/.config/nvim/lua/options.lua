@@ -5,7 +5,7 @@ local o = vim.opt
 -----------
 o.clipboard = 'unnamedplus'   -- use system clipboard
 o.mouse = 'a'                 -- allow the mouse to be used in Nvim
-o.swapfile = false            -- disable swap files creationop
+o.swapfile = false            -- disable swap files creation
 o.completeopt = {'menu', 'menuone', 'noselect'}
 
 ---------
@@ -13,8 +13,8 @@ o.completeopt = {'menu', 'menuone', 'noselect'}
 ---------
 o.autoindent = true           -- enable auto indentation
 o.tabstop = 2                 -- number of visual spaces per TAB
-o.softtabstop = 2             -- number of spacesin tab when editing
-o.shiftwidth = 2              -- insert 4 spaces on a tab
+o.softtabstop = 2             -- number of spaces in tab when editing
+o.shiftwidth = 2              -- insert 2 spaces on a tab
 o.expandtab = true            -- tabs are spaces, mainly because of python
 
 ---------------
@@ -26,9 +26,9 @@ o.number = true               -- show absolute number
 o.relativenumber = false      -- add numbers to each line on the left side
 o.numberwidth = 2             -- set number column width
 o.cursorline = true           -- highlight cursor line underneath the cursor horizontally
-o.splitbelow = true           -- open new vertical split bottom
-o.splitright = true           -- open new horizontal splits right
-o.termguicolors = true        -- enabl 24-bit RGB color in the TUI
+o.splitbelow = true           -- open new horizontal splits below
+o.splitright = true           -- open new vertical splits right
+o.termguicolors = true        -- enable 24-bit RGB color in the TUI
 o.showmode = false
 o.winborder = 'rounded'
 o.hlsearch = true
@@ -36,8 +36,7 @@ o.hlsearch = true
 -- Fold
 vim.wo.foldlevel = 99
 
--- Undo
-o.undodir = os.getenv('HOME') .. '/.vim/undodir'
+-- Undo (undodir left at Neovim's default, ~/.local/state/nvim/undo, which it creates itself)
 o.undofile = true             -- enable undo history
 
 ---------------
@@ -51,9 +50,10 @@ o.smartcase = true            -- but make it case sensitive if an uppercase is e
 ------------------
 -- Shell config --
 ------------------
-local is_windows = vim.fn.has("win64") or vim.fn.has("win32") or vim.fn.has("win16")
+-- vim.fn.has() returns 0 or 1, and 0 is truthy in Lua, so compare with 1
+local is_windows = vim.fn.has("win32") == 1   -- also true on 64-bit Windows
 if is_windows then
-  local hasWSL = vim.fn.has("wsl")
+  local hasWSL = vim.fn.has("wsl") == 1
   if not hasWSL then
     o.shell = 'pwsh'
     local powershell_options = {

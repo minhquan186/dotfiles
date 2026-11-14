@@ -10,10 +10,19 @@ autocmd('FileType', {
   command = "set nobuflisted"
 })
 
--- Remove whitespace on save
+-- Remove trailing whitespace on save, keeping the cursor/view and the last search.
+-- Skipped where trailing spaces matter: markdown line breaks, diff/patch context lines.
+local keep_trailing_ws = { markdown = true, diff = true }
 autocmd('BufWritePre', {
-  pattern = '',
-  command = ":%s/\\s\\+$//e"
+  callback = function(args)
+    local bo = vim.bo[args.buf]
+    if keep_trailing_ws[bo.filetype] or bo.binary or not bo.modifiable then
+      return
+    end
+    local view = vim.fn.winsaveview()
+    vim.cmd([[keeppatterns %s/\s\+$//e]])
+    vim.fn.winrestview(view)
+  end,
 })
 
 -- Restore cursor position
