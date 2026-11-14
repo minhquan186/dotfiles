@@ -147,7 +147,7 @@ require('lualine').setup({
     lualine_a = {
         {
             'mode',
-            seperator =
+            separator =
             {
                 left = ''
             },
@@ -180,7 +180,7 @@ require('lualine').setup({
     lualine_z = {
         {
             'location',
-            seperator =
+            separator =
             {
                 right = ''
             },
