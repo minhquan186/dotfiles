@@ -126,6 +126,17 @@ config.font_size = 14
 -- Color scheme
 config.color_scheme = "Catppuccin Mocha"
 
+-- Catppuccin Mocha colors used by the status bar and tab titles
+local mocha = {
+  text     = "#cdd6f4",
+  overlay2 = "#9399b2",
+  green    = "#a6e3a1",
+  yellow   = "#f9e2af",
+  peach    = "#fab387",
+  mauve    = "#cba6f7",
+  sky      = "#89dceb",
+}
+
 -- Window Config
 config.window_decorations = "RESIZE"
 config.window_close_confirmation = "NeverPrompt"
@@ -204,18 +215,18 @@ wezterm.on("update-status", function(window, pane)
   -- Placeholder var
   -- Initialize stat variables
   local stat = ""
-  local stat_color = "Lime"
+  local stat_color = mocha.green
 
   -- Get OS symbol
   if host_os == "windows" then
     stat = wezterm.nerdfonts.dev_windows
-    stat_color = "Aqua"
+    stat_color = mocha.sky
   elseif host_os == "macos" then
     stat = wezterm.nerdfonts.dev_apple
-    stat_color = "White"
+    stat_color = mocha.text
   else
     stat = wezterm.nerdfonts.dev_linux
-    stat_color = "White"
+    stat_color = mocha.text
   end
 
   -- Time
@@ -228,11 +239,11 @@ wezterm.on("update-status", function(window, pane)
   -- Display key table
   if window:active_key_table() then
     stat = window:active_key_table()
-    stat_color = "Lime"
+    stat_color = mocha.green
   end
   if window:leader_is_active() then
     stat = wezterm.nerdfonts.oct_terminal .. " COMMAND"
-    stat_color = "Fuchsia"
+    stat_color = mocha.mauve
   end
 
   window:set_left_status(wezterm.format({
@@ -243,11 +254,11 @@ wezterm.on("update-status", function(window, pane)
   }))
 
   window:set_right_status(wezterm.format ({
-    { Foreground = { Color = "Yellow" } },
+    { Foreground = { Color = mocha.yellow } },
     { Text = weather_or_battery },
     "ResetAttributes",
     { Text = " | " },
-    { Foreground = { Color = "Silver" } },
+    { Foreground = { Color = mocha.overlay2 } },
     { Text = wezterm.nerdfonts.md_clock_outline .. "  " .. time},
     { Text = "  " },
   }))
@@ -313,7 +324,7 @@ wezterm.on(
     title = wezterm.truncate_right(" " .. title .. " ", max_width - wezterm.column_width(dot))
     return {
       { Text = title },
-      { Foreground = { Color = "Orange" } },
+      { Foreground = { Color = mocha.peach } },
       { Text = dot },
     }
   end
