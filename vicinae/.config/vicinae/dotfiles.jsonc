@@ -1,0 +1,24 @@
+// Vicinae settings tracked in the dotfiles repo.
+//
+// Vicinae owns ~/.config/vicinae/settings.json: it rewrites that file (dropping
+// comments) whenever a setting is changed in its GUI, and saves by renaming a
+// temp file over it, which would replace a stow symlink. So settings.json stays
+// a plain local file that imports this one:
+//
+//   { "imports": ["dotfiles.jsonc"] }      (./install.sh links adds this)
+//
+// Anything set in settings.json (including GUI changes) overrides this file.
+// To keep a GUI change on every machine, move it from settings.json to here.
+// All options: `vicinae config default`, or https://docs.vicinae.com/config
+{
+	"$schema": "https://vicinae.com/schemas/config.json",
+
+	// Bundled themes, matching the rest of the setup
+	"theme": {
+		"dark": { "name": "catppuccin-mocha" },
+		"light": { "name": "catppuccin-latte" }
+	}
+
+	// Glass like WezTerm (0.85); blur needs opacity < 1. Uncomment to try:
+	// , "launcher_window": { "opacity": 0.85 }
+}

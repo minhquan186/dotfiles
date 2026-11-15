@@ -13,6 +13,7 @@ mirrors `$HOME`.
 | `git` | `~/.gitconfig`, `~/.config/delta/` | delta pager with Catppuccin Mocha |
 | `nvim` | `~/.config/nvim/` | Neovim 0.12+ (`vim.pack`) |
 | `starship` | `~/.config/starship.toml` | two-line prompt, CUDA/CMake modules |
+| `vicinae` | `~/.config/vicinae/dotfiles.jsonc` | launcher theme; `settings.json` stays Vicinae's own file and imports this |
 | `wezterm` | `~/.wezterm.lua` | |
 | `backgrounds` | `~/.config/backgrounds/` | wallpapers |
 

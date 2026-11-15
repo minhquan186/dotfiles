@@ -123,6 +123,7 @@ link_ubuntu_names() {
 # Move anything that would block stow out of the way. A target is fine when it
 # already resolves to the file in this repo (linked directly or through a
 # linked parent directory).
+NO_FOLD_DIRS=(.config/vicinae)
 BACKUP="$HOME/.dotfiles-backup/$(date +%Y%m%d-%H%M%S)"
 backed_up=0
 backup_conflicts() {
@@ -145,7 +146,17 @@ link_packages() {
     bad "stow is not installed (run: ./install.sh packages)"
     return 1
   fi
-  local pkg
+  local pkg dir
+  # Apps that write their own files next to ours: keep these real directories,
+  # so stow links the files inside instead of linking the whole directory into
+  # the repo (Vicinae writes settings.json here)
+  for dir in "${NO_FOLD_DIRS[@]}"; do
+    if [ -L "$HOME/$dir" ]; then
+      note "~/$dir is a link into the repo; replacing it with a real directory"
+      run rm "$HOME/$dir"
+    fi
+    [ -d "$HOME/$dir" ] || run mkdir -p "$HOME/$dir"
+  done
   for pkg in "${packages[@]}"; do
     backup_conflicts "$pkg"
   done
@@ -197,7 +208,35 @@ post_steps() {
   else
     note "yazi >= $YAZI_MIN not found; run 'ya pkg install' after installing it"
   fi
+  vicinae_import
   note "Neovim installs its plugins on first start"
+}
+
+# Vicinae's settings.json is its own file (see vicinae/.config/vicinae/dotfiles.jsonc);
+# make sure it imports the tracked dotfiles.jsonc. Vicinae reloads it on change.
+vicinae_import() {
+  local f="$HOME/.config/vicinae/settings.json"
+  [ -f "$REPO/vicinae/.config/vicinae/dotfiles.jsonc" ] || return 0
+  if [ ! -e "$f" ]; then
+    note "vicinae: creating settings.json that imports dotfiles.jsonc"
+    [ "$DRY" = 1 ] || printf '%s\n' '{ "imports": ["dotfiles.jsonc"] }' > "$f"
+  elif grep -q 'dotfiles\.jsonc' "$f"; then
+    ok "vicinae: settings.json imports dotfiles.jsonc"
+  elif grep -q '"imports"' "$f"; then
+    note "vicinae: add \"dotfiles.jsonc\" to the \"imports\" list in $f"
+  elif grep -q '^{}$' "$f"; then
+    note "vicinae: adding the dotfiles.jsonc import to settings.json"
+    run sed -i 's/^{}$/{ "imports": ["dotfiles.jsonc"] }/' "$f"
+  elif grep -q '^{$' "$f"; then
+    note "vicinae: adding the dotfiles.jsonc import to settings.json"
+    run sed -i '0,/^{$/s//{\n\t"imports": ["dotfiles.jsonc"],/' "$f"
+  else
+    note "vicinae: add \"imports\": [\"dotfiles.jsonc\"] to $f"
+  fi
+  if [ -f "$f" ] && grep -q '"theme"' "$f"; then
+    note "vicinae: settings.json sets its own \"theme\", which overrides dotfiles.jsonc;"
+    note "         remove that block from $f to use the repo's theme"
+  fi
 }
 
 # ---------------------------------------------------------------------------
