@@ -234,7 +234,7 @@ check_tools() {
   check_tool "delta" delta "" "" \
     "https://github.com/dandavison/delta/releases"
 
-  if have fc-list && fc-list | grep -qiE "JetBrains ?Mono.*(Nerd|NF)"; then
+  if have fc-list && fc-list | grep -iE "JetBrains ?Mono.*(Nerd|NF)" >/dev/null; then
     ok "JetBrainsMono Nerd Font"
   else
     bad "JetBrainsMono Nerd Font (optional: WezTerm bundles JetBrains Mono + Nerd symbols)"
