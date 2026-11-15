@@ -193,7 +193,7 @@ post_steps() {
 NVIM_MIN=0.12
 YAZI_MIN=26.8.15
 nvim_version() { nvim --version 2>/dev/null | sed -n '1s/^NVIM v\([0-9.]*\).*/\1/p'; }
-yazi_version() { yazi --version 2>/dev/null | sed -n '1s/^Yazi \([0-9.]*\).*/\1/p'; }
+yazi_version() { yazi --version 2>/dev/null | grep -oE '[0-9]+(\.[0-9]+)+' | head -n1; }
 
 # check_tool NAME COMMAND MIN_VERSION VERSION_FUNCTION HOW
 check_tool() {
@@ -234,10 +234,10 @@ check_tools() {
   check_tool "delta" delta "" "" \
     "https://github.com/dandavison/delta/releases"
 
-  if have fc-list && fc-list | grep -qi "JetBrainsMono Nerd Font"; then
+  if have fc-list && fc-list | grep -qiE "JetBrains ?Mono.*(Nerd|NF)"; then
     ok "JetBrainsMono Nerd Font"
   else
-    bad "JetBrainsMono Nerd Font"
+    bad "JetBrainsMono Nerd Font (optional: WezTerm bundles JetBrains Mono + Nerd symbols)"
     printf '          %s\n' "unzip into ~/.local/share/fonts, then fc-cache -f: https://www.nerdfonts.com/font-downloads"
     manual=1
   fi
