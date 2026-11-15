@@ -6,7 +6,7 @@ mirrors `$HOME`.
 
 | Package | Links to | Notes |
 |---|---|---|
-| `bash` | `~/.bash_aliases`, `~/.inputrc`, `~/.bashrc.d/` | aliases, vi-mode readline, history/fzf/zoxide/vivid extras |
+| `bash` | `~/.bash_aliases`, `~/.inputrc`, `~/.bashrc.d/` | aliases, vi-mode readline, history/fzf/zoxide/vivid extras, CMake defaults (Ninja, compile_commands, ccache) |
 | `bat` | `~/.config/bat/` | Catppuccin Mocha theme as default |
 | `clangd` | `~/.config/clangd/config.yaml` | makes `.cu`/`.cuh` parse from nvcc compile commands |
 | `eza` | `~/.config/eza/theme.yml` | Catppuccin Mocha, mauve accent |

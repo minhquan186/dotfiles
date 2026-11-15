@@ -1,5 +1,5 @@
 alias vi=nvim
-alias cb="rm -rf build/ && cmake -B build -G Ninja"
+alias cb="rm -rf build/ && cmake -B build"  # generator, compile_commands, ccache: see .bashrc.d/cmake.bash
 
 # Replace ls with eza
 # alias ls='eza'
