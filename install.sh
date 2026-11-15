@@ -2,14 +2,18 @@
 # Set up these dotfiles on a new machine, or refresh them after `git pull`.
 # Safe to rerun: every step is skipped when it is already done.
 #
-#   ./install.sh            everything: packages, links, post-steps, check
+#   ./install.sh            everything: packages, tools, links, post-steps, check
 #   ./install.sh packages   apt packages from packages.txt only
+#   ./install.sh tools      install missing tools apt cannot provide, using their
+#                           official installers: wezterm starship neovim yazi font
+#   ./install.sh tools vicinae   install the named tool(s) only; vicinae is opt-in
 #   ./install.sh links      stow links + post-steps (use after git pull)
-#   ./install.sh check      show installed tools and what to install by hand
-#   add -n to any of them   dry run: print what would be done
+#   ./install.sh check      show installed tools and versions
+#   -n   dry run: print what would be done      -y   do not ask before each tool
 #
-# Uses sudo only for apt. Files that are in the way of a link are moved to
-# ~/.dotfiles-backup/<timestamp>/, never overwritten.
+# sudo is used for apt, and by the WezTerm, Starship and Vicinae installers.
+# Each tool installer shows what it will run and asks first. Files that are in
+# the way of a link are moved to ~/.dotfiles-backup/<timestamp>/, never overwritten.
 
 set -euo pipefail
 
@@ -17,15 +21,22 @@ REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$REPO"
 
 DRY=0
+YES=0
 CMD=all
+NAMES=()
 for arg in "$@"; do
   case "$arg" in
     -n|--dry-run) DRY=1 ;;
-    all|packages|links|check) CMD=$arg ;;
-    -h|--help) sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
-    *) echo "unknown argument: $arg (try --help)" >&2; exit 2 ;;
+    -y|--yes) YES=1 ;;
+    all|packages|tools|links|check) CMD=$arg ;;
+    -h|--help) sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -*) echo "unknown option: $arg (try --help)" >&2; exit 2 ;;
+    *) NAMES+=("$arg") ;;
   esac
 done
+if [ "${#NAMES[@]}" -gt 0 ] && [ "$CMD" != tools ]; then
+  echo "unknown argument: ${NAMES[0]} (try --help)" >&2; exit 2
+fi
 
 if [ -t 1 ]; then
   B=$'\033[1m'; G=$'\033[32m'; Y=$'\033[33m'; R=$'\033[31m'; D=$'\033[2m'; Z=$'\033[0m'
@@ -195,65 +206,227 @@ YAZI_MIN=26.8.15
 nvim_version() { nvim --version 2>/dev/null | sed -n '1s/^NVIM v\([0-9.]*\).*/\1/p'; }
 yazi_version() { yazi --version 2>/dev/null | grep -oE '[0-9]+(\.[0-9]+)+' | head -n1; }
 
-# check_tool NAME COMMAND MIN_VERSION VERSION_FUNCTION HOW
-check_tool() {
-  local name=$1 cmd=$2 min=$3 vfn=$4 how=$5 v
-  if ! have "$cmd"; then
-    bad "$name"; printf '          %s\n' "$how"; manual=1; return
+TOOLS=(wezterm starship neovim yazi font)   # installed by `tools` when missing
+OPTIONAL_TOOLS=(vicinae)                    # only when named: ./install.sh tools vicinae
+
+# tool_state NAME: prints "ok [version]", "missing" or "old VERSION"
+tool_state() {
+  local v
+  case "$1" in
+    wezterm)  have wezterm  && echo ok || echo missing ;;
+    starship) have starship && echo ok || echo missing ;;
+    vicinae)  have vicinae  && echo ok || echo missing ;;
+    neovim)
+      have nvim || { echo missing; return; }
+      v=$(nvim_version)
+      if version_ge "${v:-0}" "$NVIM_MIN"; then echo "ok $v"; else echo "old ${v:-?}"; fi ;;
+    yazi)
+      have yazi || { echo missing; return; }
+      v=$(yazi_version)
+      if version_ge "${v:-0}" "$YAZI_MIN"; then echo "ok $v"; else echo "old ${v:-?}"; fi ;;
+    font)
+      # no grep -q: it would close the pipe early and fail under pipefail
+      if have fc-list && fc-list | grep -iE "JetBrains ?Mono.*(Nerd|NF)" >/dev/null; then
+        echo ok
+      else
+        echo missing
+      fi ;;
+    *) echo "unknown tool: $1" >&2; return 2 ;;
+  esac
+}
+
+tool_title() {
+  case "$1" in
+    wezterm)  echo "WezTerm" ;;
+    starship) echo "Starship" ;;
+    neovim)   echo "Neovim (>= $NVIM_MIN)" ;;
+    yazi)     echo "yazi (>= $YAZI_MIN)" ;;
+    font)     echo "JetBrainsMono Nerd Font" ;;
+    vicinae)  echo "Vicinae launcher (optional)" ;;
+  esac
+}
+
+tool_docs() {
+  case "$1" in
+    wezterm)  echo "https://wezterm.org/install/linux.html" ;;
+    starship) echo "https://starship.rs/guide/" ;;
+    neovim)   echo "https://github.com/neovim/neovim/releases" ;;
+    yazi)     echo "https://yazi-rs.github.io/docs/installation" ;;
+    font)     echo "https://www.nerdfonts.com/font-downloads" ;;
+    vicinae)  echo "https://docs.vicinae.com/install/linux" ;;
+  esac
+}
+
+# What the installer does, shown before asking
+tool_plan() {
+  case "$1" in
+    wezterm)  echo "add WezTerm's apt repo (apt.fury.io/wez) and apt install wezterm [sudo]" ;;
+    starship) echo "curl -sS https://starship.rs/install.sh | sh -s -- -y   (/usr/local/bin) [sudo]" ;;
+    neovim)   echo "latest release tarball from github.com/neovim -> ~/.local/opt, link ~/.local/bin/nvim" ;;
+    yazi)
+      if yazi_from_cargo; then
+        echo "cargo install --force yazi-build   (updates your cargo install; compiles, takes a while)"
+      else
+        echo "latest release zip from github.com/sxyazi/yazi -> ~/.local/bin/{yazi,ya}"
+      fi ;;
+    font)     echo "JetBrainsMono.zip from github.com/ryanoasis/nerd-fonts -> ~/.local/share/fonts" ;;
+    vicinae)  echo "curl -fsSL https://vicinae.com/install | bash   (/usr/local) [sudo]" ;;
+  esac
+}
+
+yazi_from_cargo() {
+  have cargo && [ "$(command -v yazi 2>/dev/null)" = "$HOME/.cargo/bin/yazi" ]
+}
+
+as_root() { if [ "$(id -u)" -eq 0 ]; then "$@"; else sudo "$@"; fi; }
+
+linux_arch() {
+  case "$(uname -m)" in
+    x86_64)        echo "$1" ;;
+    aarch64|arm64) echo "$2" ;;
+    *) echo "unsupported CPU: $(uname -m)" >&2; return 1 ;;
+  esac
+}
+
+do_install() {
+  local tmp arch
+  tmp=$(mktemp -d)
+  # shellcheck disable=SC2064
+  trap "rm -rf '$tmp'" RETURN
+  case "$1" in
+    wezterm)
+      curl -fsSL https://apt.fury.io/wez/gpg.key -o "$tmp/wez.key"
+      as_root gpg --yes --dearmor -o /usr/share/keyrings/wezterm-fury.gpg "$tmp/wez.key"
+      echo 'deb [signed-by=/usr/share/keyrings/wezterm-fury.gpg] https://apt.fury.io/wez/ * *' \
+        | as_root tee /etc/apt/sources.list.d/wezterm.list >/dev/null
+      as_root chmod 644 /usr/share/keyrings/wezterm-fury.gpg
+      as_root apt-get update
+      as_root apt-get install -y wezterm
+      ;;
+    starship)
+      curl -fsSL https://starship.rs/install.sh -o "$tmp/install.sh"
+      sh "$tmp/install.sh" -y
+      ;;
+    neovim)
+      arch=$(linux_arch x86_64 arm64)
+      curl -fL --progress-bar -o "$tmp/nvim.tar.gz" \
+        "https://github.com/neovim/neovim/releases/latest/download/nvim-linux-$arch.tar.gz"
+      mkdir -p "$HOME/.local/opt" "$HOME/.local/bin"
+      rm -rf "$HOME/.local/opt/nvim-linux-$arch"
+      tar -xzf "$tmp/nvim.tar.gz" -C "$HOME/.local/opt"
+      ln -sfn "$HOME/.local/opt/nvim-linux-$arch/bin/nvim" "$HOME/.local/bin/nvim"
+      ;;
+    yazi)
+      if yazi_from_cargo; then
+        cargo install --force yazi-build
+      else
+        arch=$(linux_arch x86_64 aarch64)
+        curl -fL --progress-bar -o "$tmp/yazi.zip" \
+          "https://github.com/sxyazi/yazi/releases/latest/download/yazi-$arch-unknown-linux-gnu.zip"
+        unzip -q "$tmp/yazi.zip" -d "$tmp"
+        mkdir -p "$HOME/.local/bin"
+        install -m 755 "$tmp/yazi-$arch-unknown-linux-gnu/yazi" "$tmp/yazi-$arch-unknown-linux-gnu/ya" \
+          "$HOME/.local/bin/"
+      fi
+      ;;
+    font)
+      curl -fL --progress-bar -o "$tmp/font.zip" \
+        "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip"
+      mkdir -p "$HOME/.local/share/fonts/JetBrainsMonoNerdFont"
+      unzip -qo "$tmp/font.zip" '*.ttf' -d "$HOME/.local/share/fonts/JetBrainsMonoNerdFont"
+      fc-cache -f
+      ;;
+    vicinae)
+      curl -fsSL https://vicinae.com/install -o "$tmp/install.sh"
+      bash "$tmp/install.sh"
+      ;;
+  esac
+}
+
+# confirm: true when the install should go ahead
+confirm() {
+  local reply
+  [ "$YES" = 1 ] && return 0
+  if [ ! -t 0 ]; then
+    note "not a terminal, skipping (use -y to install without asking)"
+    return 1
   fi
-  if [ -n "$min" ]; then
-    v=$($vfn)
-    if ! version_ge "${v:-0}" "$min"; then
-      printf '  %sTOO OLD%s %s %s, need >= %s\n' "$R" "$Z" "$name" "${v:-?}" "$min"; printf '          %s\n' "$how"; manual=1; return
+  read -r -p "          install now? [y/N] " reply
+  case "$reply" in y|Y|yes) return 0 ;; *) return 1 ;; esac
+}
+
+install_tools() {
+  step "tools from their official installers"
+  local list=("${TOOLS[@]}") name state failed=0 rc
+  [ "${#NAMES[@]}" -gt 0 ] && list=("${NAMES[@]}")
+  if ! have curl; then
+    bad "curl is not installed (run: ./install.sh packages)"; return 1
+  fi
+  for name in "${list[@]}"; do
+    state=$(tool_state "$name") || exit 2
+    case "$state" in
+      ok*) ok "$(tool_title "$name")${state#ok}"; continue ;;
+      old*) note "$(tool_title "$name"): found ${state#old }, too old" ;;
+      *)    note "$(tool_title "$name"): not installed" ;;
+    esac
+    printf '          %s\n' "$(tool_plan "$name")"
+    if [ "$DRY" = 1 ]; then continue; fi
+    confirm || continue
+    # set -e is ignored inside an `if` condition, so run the installer outside one
+    set +e; (set -e; do_install "$name"); rc=$?; set -e
+    if [ "$rc" -ne 0 ]; then
+      bad "$(tool_title "$name"): installer failed, see $(tool_docs "$name")"
+      failed=1; continue
     fi
-    ok "$name $v"
-  else
-    ok "$name"
-  fi
+    hash -r
+    export PATH="$HOME/.local/bin:$PATH"
+    state=$(tool_state "$name")
+    case "$state" in
+      ok*) ok "$(tool_title "$name")${state#ok} installed" ;;
+      *)   bad "$(tool_title "$name"): installed, but the one found in PATH is still ${state}"
+           note "open a new shell; if it persists, another copy comes first in PATH" ;;
+    esac
+    if [ "$name" = vicinae ]; then
+      note "GNOME: install Vicinae's GNOME extension, start its server at login, and bind"
+      note "a shortcut to 'vicinae toggle' (see the quickstart in $(tool_docs vicinae))"
+    fi
+  done
+  return "$failed"
 }
 
 check_tools() {
-  step "tools to install by hand (not handled by this script)"
-  manual=0
-  check_tool "WezTerm" wezterm "" "" \
-    "apt repo: https://wezterm.org/install/linux.html"
-  check_tool "Starship" starship "" "" \
-    "curl -sS https://starship.rs/install.sh | sh    (https://starship.rs/guide/)"
-  check_tool "Neovim" nvim "$NVIM_MIN" nvim_version \
-    "release tarball: https://github.com/neovim/neovim/releases"
-  check_tool "yazi" yazi "$YAZI_MIN" yazi_version \
-    "cargo install --force yazi-build    (https://yazi-rs.github.io/docs/installation)"
-  check_tool "vivid (optional, LS_COLORS)" vivid "" "" \
-    ".deb: https://github.com/sharkdp/vivid/releases"
-  check_tool "zoxide (optional)" zoxide "" "" \
-    "https://github.com/ajeetdsouza/zoxide#installation"
-  check_tool "fzf (optional)" fzf "" "" \
-    "https://github.com/junegunn/fzf#installation"
-  check_tool "eza" eza "" "" \
-    "https://github.com/eza-community/eza/blob/main/INSTALL.md"
-  check_tool "delta" delta "" "" \
-    "https://github.com/dandavison/delta/releases"
-
-  if have fc-list && fc-list | grep -iE "JetBrains ?Mono.*(Nerd|NF)" >/dev/null; then
-    ok "JetBrainsMono Nerd Font"
-  else
-    bad "JetBrainsMono Nerd Font (optional: WezTerm bundles JetBrains Mono + Nerd symbols)"
-    printf '          %s\n' "unzip into ~/.local/share/fonts, then fc-cache -f: https://www.nerdfonts.com/font-downloads"
-    manual=1
-  fi
-
-  if [ "$manual" = 1 ]; then
-    printf '\n  Install or update the ones flagged above, then rerun: ./install.sh links\n'
-  else
-    printf '\n  Nothing left to install by hand.\n'
+  step "tools"
+  local name state todo=0 cmd
+  for name in "${TOOLS[@]}"; do
+    state=$(tool_state "$name")
+    case "$state" in
+      ok*)  ok "$(tool_title "$name")${state#ok}" ;;
+      old*) printf '  %sTOO OLD%s %s: found %s\n' "$R" "$Z" "$(tool_title "$name")" "${state#old }"; todo=1 ;;
+      *)    bad "$(tool_title "$name")"; todo=1 ;;
+    esac
+  done
+  # from packages.txt; shown here because older releases may not package them
+  for cmd in eza delta fzf zoxide vivid ccache; do
+    if have "$cmd"; then ok "$cmd"; else note "$cmd not installed (./install.sh packages; optional if apt lacks it)"; fi
+  done
+  for name in "${OPTIONAL_TOOLS[@]}"; do
+    state=$(tool_state "$name")
+    case "$state" in
+      ok*) ok "$(tool_title "$name")" ;;
+      *)   note "$(tool_title "$name"): not installed (./install.sh tools $name)" ;;
+    esac
+  done
+  if [ "$todo" = 1 ]; then
+    printf '\n  Install the flagged ones with: ./install.sh tools\n'
   fi
 }
 
 # ---------------------------------------------------------------------------
 [ "$DRY" = 1 ] && printf '%sdry run: nothing will be changed%s\n' "$Y" "$Z"
 case "$CMD" in
-  all)      install_packages; link_ubuntu_names; link_packages; post_steps; check_tools ;;
+  all)      install_packages; link_ubuntu_names; install_tools || true; link_packages; post_steps; check_tools ;;
   packages) install_packages ;;
+  tools)    install_tools ;;
   links)    link_ubuntu_names; link_packages; post_steps ;;
   check)    check_tools ;;
 esac
