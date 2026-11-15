@@ -21,21 +21,25 @@ mirrors `$HOME`.
 ```sh
 git clone https://github.com/minhquan186/dotfiles ~/dotfiles
 cd ~/dotfiles
-stow bash bat clangd eza git nvim starship wezterm backgrounds
-batcat cache --build   # register the bat theme (also used by delta)
+./install.sh        # add -n first to see what it would do
 ```
 
-Then add this line at the end of `~/.bashrc` (after `starship init`):
+`install.sh` is safe to rerun and does, in order:
 
-```sh
-for f in ~/.bashrc.d/*.bash; do [ -r "$f" ] && . "$f"; done
-```
+1. installs the apt packages listed in `packages.txt` (the only step using sudo)
+2. links `fd`/`bat` to Ubuntu's `fdfind`/`batcat` in `~/.local/bin`
+3. stows every package; files in the way are moved to `~/.dotfiles-backup/`
+4. adds `starship init` and the `~/.bashrc.d` loop to `~/.bashrc` if missing,
+   rebuilds the bat theme cache, runs `ya pkg install`
+5. lists the tools it does not install, with their versions and install links:
+   WezTerm, Starship, Neovim >= 0.12, yazi >= 26.8.15, vivid, JetBrainsMono
+   Nerd Font
+
+After `git pull`, run `./install.sh links` (steps 2-4). `./install.sh check`
+shows step 5 on its own.
 
 Machine-specific git settings (e.g. a work email) go in an untracked
 `~/.gitconfig.local`, which `.gitconfig` includes last.
-
-Needs: WezTerm, Starship, JetBrainsMono Nerd Font, eza, bat, git-delta, Neovim,
-clangd. Optional (skipped if missing): fzf, fd-find, zoxide, vivid.
 
 The X11 setup (bspwm, sxhkd, picom, polybar, xbindkeys) was removed after
 moving to GNOME on Wayland; it is still in the git history.

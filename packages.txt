@@ -1,0 +1,35 @@
+# apt packages installed by ./install.sh (one per line, # for comments).
+# Packages your Ubuntu release does not have are skipped and reported.
+
+# core
+stow
+git
+curl
+unzip
+fontconfig
+
+# build
+build-essential
+cmake
+ninja-build
+ccache
+clangd
+
+# shell tools
+ripgrep
+fd-find
+fzf
+zoxide
+bat
+eza
+git-delta
+vivid
+nvtop
+
+# yazi previews
+file
+ffmpeg
+7zip
+jq
+poppler-utils
+imagemagick
