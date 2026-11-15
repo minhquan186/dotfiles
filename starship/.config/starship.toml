@@ -11,7 +11,6 @@ $git_state\
 $c\
 $cpp\
 ${custom.cuda}\
-${custom.build_debug}\
 ${custom.build}\
 $rust\
 $python\
@@ -99,21 +98,9 @@ style = "bold green"
 format = "[$symbol( $output)]($style) "
 
 # CMake build type, shown only inside a build dir (nearest CMakeCache.txt
-# in the current dir or a parent). Debug or no type -> red; anything else -> grey.
-[custom.build_debug]
-when = true
-shell = ["sh"]
-command = '''
-d=$PWD
-until [ -f "$d/CMakeCache.txt" ]; do [ -z "$d" ] && exit 0; d=${d%/*}; done
-f=$d/CMakeCache.txt
-t=$(sed -n 's/^CMAKE_BUILD_TYPE:[A-Z]*=//p' "$f")
-grep -q '^CMAKE_CONFIGURATION_TYPES:' "$f" && [ -z "$t" ] && exit 0
-case "$t" in [Dd][Ee][Bb][Uu][Gg]) echo Debug ;; "") echo none ;; esac
-'''
-style = "bold red"
-format = "([$output]($style) )"
-
+# in the current dir or a parent). Debug or no type -> bold red; anything else
+# -> subtext0. One module, so the parent-dir walk runs once per prompt; colors
+# are printed by the command itself (Mocha red #f38ba8, subtext0 #a6adc8).
 [custom.build]
 when = true
 shell = ["sh"]
@@ -123,10 +110,14 @@ until [ -f "$d/CMakeCache.txt" ]; do [ -z "$d" ] && exit 0; d=${d%/*}; done
 f=$d/CMakeCache.txt
 t=$(sed -n 's/^CMAKE_BUILD_TYPE:[A-Z]*=//p' "$f")
 grep -q '^CMAKE_CONFIGURATION_TYPES:' "$f" && [ -z "$t" ] && exit 0
-case "$t" in [Dd][Ee][Bb][Uu][Gg]|"") ;; *) echo "$t" ;; esac
+case "$t" in
+  [Dd][Ee][Bb][Uu][Gg]) printf '\033[1;38;2;243;139;168mDebug\033[0m' ;;
+  "")                   printf '\033[1;38;2;243;139;168mnone\033[0m' ;;
+  *)                    printf '\033[38;2;166;173;200m%s\033[0m' "$t" ;;
+esac
 '''
-style = "subtext0"
-format = "([$output]($style) )"
+unsafe_no_escape = true   # let the ANSI colors above through
+format = "($output )"
 
 [rust]
 symbol = "\uE7A8"
