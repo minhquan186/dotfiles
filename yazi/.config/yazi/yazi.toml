@@ -1,0 +1,26 @@
+[mgr]
+ratio = [1, 3, 4]        # parent : current : preview (wide preview for code)
+sort_by = "natural"      # run_2 before run_10 for numbered recordings/frames
+sort_dir_first = true
+linemode = "size"
+show_hidden = false      # toggle with "."
+show_symlink = true
+scrolloff = 5
+
+[preview]
+wrap = "no"
+tab_size = 2
+max_width = 1500         # image previews are sharper at 1080p+
+max_height = 1500
+image_quality = 85
+
+# git.yazi: show status signs in the file list
+[[plugin.prepend_fetchers]]
+group = "git"
+url = "*"
+run = "git"
+
+[[plugin.prepend_fetchers]]
+group = "git"
+url = "*/"
+run = "git"

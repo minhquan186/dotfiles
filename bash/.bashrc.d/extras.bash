@@ -5,6 +5,8 @@
 #
 # Each tool is optional: anything not installed is skipped.
 
+export EDITOR=nvim VISUAL=nvim   # used by yazi, git, crontab -e, sudoedit
+
 # ---------------------------------------------------------------------------
 # History: large, deduplicated, shared between WezTerm panes/tabs
 # ---------------------------------------------------------------------------
